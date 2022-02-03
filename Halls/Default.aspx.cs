@@ -137,6 +137,7 @@ namespace Halls
                 ErrorLabel.Text = "You need to select a file!";
                 return;
             }
+            ErrorLabel.Text = string.Empty;
 
             string fileName = XMLFileUpload.PostedFile.FileName;
             string filePath = Server.MapPath("~/upload/") + fileName;
@@ -146,20 +147,17 @@ namespace Halls
             //Viskas nuskaityta i sita kintamaji
             Filharmonija result = Deserialize<Filharmonija>(xmlFile);
 
-            //ErrorLabel.Text = result.Hall.hallGroups[1].HallSeats[0].Color.ToString();
-
-
-            InsertHallToDatabase(result.Hall);
-            ErrorLabel.Text += ("- " + result.Hall + "<br />");
+            //InsertHallToDatabase(result.Hall);
+            ErrorLabel.Text += ("<br />- " + result.Hall + "<br />");
 
             for (int i = 0; i < result.Hall.hallGroups.Count; i++)
             {
-                InsertHallGroupToDatabase(result.Hall.hallGroups[i]);
+                //InsertHallGroupToDatabase(result.Hall.hallGroups[i]);
                 ErrorLabel.Text += ("- " + result.Hall.hallGroups[i] + "<br />");
 
                 for (int j = 0; j < result.Hall.hallGroups[i].HallSeats.Count; j++)
                 {
-                    InsertHallSeatToDatabase(result.Hall.hallGroups[i].HallSeats[j]);
+                    //InsertHallSeatToDatabase(result.Hall.hallGroups[i].HallSeats[j]);
                     ErrorLabel.Text += ("-- " + result.Hall.hallGroups[i].HallSeats[j] + "<br />");
                 }
             }
