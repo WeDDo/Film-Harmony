@@ -1,0 +1,11 @@
+﻿body {
+}
+
+.label-width-m {
+    display: block;
+    width: 7em;
+}
+
+.input-width-m {
+    width: 7em;
+}

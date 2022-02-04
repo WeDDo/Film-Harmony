@@ -9,6 +9,18 @@ namespace Halls
     [XmlRoot(ElementName ="HallGroup")]
     public class HallGroup
     {
+        public HallGroup()
+        {
+        }
+
+        public HallGroup(int id, int hallId, string name, int az)
+        {
+            Id = id;
+            HallID = hallId;
+            Name = name;
+            AZ = az;
+        }
+
         [XmlElement(ElementName = "HallGroupID")]
         public int Id { get; set; }
 

@@ -9,6 +9,24 @@ namespace Halls
     [XmlRoot(ElementName = "HallSeat")]
     public class HallSeat
     {
+        public HallSeat()
+        {
+            this.Id = -1;
+        }
+
+        public HallSeat(int id, int hallGroupId, string color, double price, int row, string rowLetter, int number, string numberLetter, bool isReserved)
+        {
+            Id = id;
+            HallGroupId = hallGroupId;
+            Color = color;
+            Price = price;
+            Row = row;
+            RowLetter = rowLetter;
+            Number = number;
+            NumberLetter = numberLetter;
+            IsReserved = isReserved;
+        }
+
         [XmlElement(ElementName = "ShowSeatID")]
         public int Id { get; set; }
 
