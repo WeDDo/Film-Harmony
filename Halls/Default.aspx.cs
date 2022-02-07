@@ -81,9 +81,39 @@ namespace Halls
             }
         }
 
+        int SelectHallSystemId(int hallId)
+        {
+            SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+            try
+            {
+                cnn.Open();
+                SqlCommand cmd = new SqlCommand("Hall_Select_System_Id", cnn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@HallID", SqlDbType.Int).Value = hallId;
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                int id = -1;
+                while (reader.Read())
+                {
+                    id = Convert.ToInt32(reader["Id"]);
+                }
+                cnn.Close();
+
+                return id;
+            }
+            catch (Exception ex)
+            {
+                ErrorLabel.Text = ex.Message;
+                return -1; //Error accessing database
+            }
+        }
+
         bool InsertHallGroupToDatabase(HallGroup hallGroup)
         {
             SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+
+            int hallId = SelectHallSystemId(hallGroup.HallID);
+
             try
             {
                 cnn.Open();
@@ -91,6 +121,7 @@ namespace Halls
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.AddWithValue("@HallGroupID", SqlDbType.Int).Value = hallGroup.Id;
                 cmd.Parameters.AddWithValue("@HallID", SqlDbType.Int).Value = hallGroup.HallID;
+                cmd.Parameters.AddWithValue("@Hall_Id", SqlDbType.Int).Value = hallId;
                 cmd.Parameters.AddWithValue("@Name", SqlDbType.NVarChar).Value = hallGroup.Name;
                 cmd.Parameters.AddWithValue("@AZ", SqlDbType.Int).Value = hallGroup.AZ;
                 cmd.ExecuteNonQuery();
@@ -105,9 +136,39 @@ namespace Halls
             }
         }
 
+        int SelectHallGroupSystemId(int hallGroupId)
+        {
+            SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+            try
+            {
+                cnn.Open();
+                SqlCommand cmd = new SqlCommand("HallGroup_Select_System_Id", cnn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@HallGroupID", SqlDbType.Int).Value = hallGroupId;
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                int id = -1;
+                while (reader.Read())
+                {
+                    id = Convert.ToInt32(reader["Id"]);
+                }
+                cnn.Close();
+
+                return id;
+            }
+            catch (Exception ex)
+            {
+                ErrorLabel.Text = ex.Message;
+                return -1; //Error accessing database
+            }
+        }
+
         bool InsertHallSeatToDatabase(HallSeat hallSeat)
         {
             SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+
+            int hallGroupId = SelectHallGroupSystemId(hallSeat.HallGroupId);
+            
             try
             {
                 cnn.Open();
@@ -115,6 +176,7 @@ namespace Halls
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.AddWithValue("@ShowSeatID", SqlDbType.Int).Value = hallSeat.Id;
                 cmd.Parameters.AddWithValue("@HallGroupID", SqlDbType.Int).Value = hallSeat.HallGroupId;
+                cmd.Parameters.AddWithValue("@HallGroup_Id", SqlDbType.Int).Value = hallGroupId;
                 cmd.Parameters.AddWithValue("@Color", SqlDbType.NVarChar).Value = hallSeat.Color;
                 cmd.Parameters.AddWithValue("@Price", SqlDbType.Float).Value = hallSeat.Price;
                 cmd.Parameters.AddWithValue("@SeatRow", SqlDbType.Int).Value = hallSeat.Row;
@@ -302,6 +364,7 @@ namespace Halls
                     InsertHallToDatabase(result.Hall[i]);
                     //ErrorLabel.Text += ("<br />- " + result.Hall + "<br />");
                 }
+                
                 for (int j = 0; j < result.Hall[i].hallGroups.Count; j++)
                 {
                     if (hallGroupIds.Contains(result.Hall[i].hallGroups[j].Id))
@@ -314,7 +377,7 @@ namespace Halls
                         InsertHallGroupToDatabase(result.Hall[i].hallGroups[j]);
                         //ErrorLabel.Text += ("- " + result.Hall.hallGroups[i] + "<br />");
                     }
-
+                    
                     for (int k = 0; k < result.Hall[i].hallGroups[j].HallSeats.Count; k++)
                     {
                         if (hallSeatIds.Contains(result.Hall[i].hallGroups[j].HallSeats[k].Id))
@@ -488,6 +551,7 @@ namespace Halls
         bool UpdateHall(Hall hall)
         {
             SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+
             try
             {
                 cnn.Open();
@@ -511,6 +575,7 @@ namespace Halls
         bool UpdateHallGroup(HallGroup hallGroup)
         {
             SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+
             try
             {
                 cnn.Open();
@@ -535,6 +600,7 @@ namespace Halls
         bool UpdateHallSeat(HallSeat hallSeat)
         {
             SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+
             try
             {
                 cnn.Open();
