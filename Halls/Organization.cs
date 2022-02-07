@@ -7,9 +7,9 @@ using System.Xml.Serialization;
 namespace Halls
 {
     [XmlRoot(ElementName = "Filharmonija")]
-    public class Filharmonija
+    public class Organization
     {
         [XmlElement(ElementName = "Hall")]
-        public Hall Hall { get; set; }
+        public List<Hall> Hall { get; set; }
     }
 }

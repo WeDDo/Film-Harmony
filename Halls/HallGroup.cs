@@ -11,6 +11,7 @@ namespace Halls
     {
         public HallGroup()
         {
+
         }
 
         public HallGroup(int id, int hallId, string name, int az)

@@ -20,11 +20,8 @@ namespace Halls
         {
             if (!IsPostBack)
             {
-                ReserveDiv.Visible = false;
-                HallGroupDropDownList.DataSource = SelectHallGroup();
-                HallGroupDropDownList.DataTextField = "Name";
-                HallGroupDropDownList.DataValueField = "Id";
-                HallGroupDropDownList.DataBind();
+                HallGroupListBindData();
+                HallListBindData();
             }
         }
 
@@ -47,12 +44,12 @@ namespace Halls
             }
         }
 
-        public static T Deserialize<T>(string xmlText)
+        public static T Deserialize<T>(string xmlText, string root)
         {
             try
             {
                 var stringReader = new StringReader(xmlText);
-                var serializer = new XmlSerializer(typeof(T));
+                var serializer = new XmlSerializer(typeof(T), new XmlRootAttribute(root));
                 return (T)serializer.Deserialize(stringReader);
             }
             catch (Exception ex)
@@ -139,7 +136,7 @@ namespace Halls
 
         HallSeat SelectHallSeat(int row, int number)
         {
-            
+
             SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
             HallSeat seat = new HallSeat();
             List<HallSeat> seats = new List<HallSeat>();
@@ -180,10 +177,9 @@ namespace Halls
             }
         }
 
-        List<HallGroup> SelectHallGroup()
+        List<HallGroup> SelectHallGroups()
         {
             SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
-            HallGroup hallGroup = new HallGroup();
             List<HallGroup> hallGroups = new List<HallGroup>();
 
             try
@@ -201,12 +197,45 @@ namespace Halls
                     string name = reader["Name"].ToString();
                     int az = Convert.ToInt32(reader["AZ"]);
 
-                    hallGroup = new HallGroup(id, hallId, name, az);
+                    HallGroup hallGroup = new HallGroup(id, hallId, name, az);
                     hallGroups.Add(hallGroup);
                 }
                 cnn.Close();
 
                 return hallGroups;
+            }
+            catch (Exception ex)
+            {
+                ErrorLabel.Text = ex.Message;
+                return null; //Error accessing database
+            }
+        }
+
+        List<Hall> SelectHalls()
+        {
+            SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+            List<Hall> halls = new List<Hall>();
+
+            try
+            {
+                cnn.Open();
+                SqlCommand cmd = new SqlCommand("Hall_Select", cnn);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int id = Convert.ToInt32(reader["HallID"]);
+                    string name = reader["Name"].ToString();
+                    int ticketLimit = Convert.ToInt32(reader["TicketLimit"]);
+
+                    Hall hall = new Hall(id, name, ticketLimit);
+                    halls.Add(hall);
+                }
+                cnn.Close();
+
+                return halls;
             }
             catch (Exception ex)
             {
@@ -246,42 +275,81 @@ namespace Halls
                 return;
             }
             ErrorLabel.Text = string.Empty;
+            ReservationStatusLabel.Visible = false;
 
             string fileName = XMLFileUpload.PostedFile.FileName;
             string filePath = Server.MapPath("~/upload/") + fileName;
             XMLFileUpload.SaveAs(filePath);
             string xmlFile = File.ReadAllText(filePath);
+            string rootName = File.ReadLines(filePath).ElementAtOrDefault(1).Trim(new char[] { '<', '>' });
 
             //Viskas nuskaityta i sita kintamaji
-            Filharmonija result = Deserialize<Filharmonija>(xmlFile);
+            Organization result = Deserialize<Organization>(xmlFile, rootName);
 
-            //InsertHallToDatabase(result.Hall);
-            ErrorLabel.Text += ("<br />- " + result.Hall + "<br />");
+            List<int> hallIds = GetHallExistingIds();
+            List<int> hallGroupIds = GetHallGroupExistingIds();
+            List<int> hallSeatIds = GetHallSeatExistingIds();
 
-            for (int i = 0; i < result.Hall.hallGroups.Count; i++)
+            for (int i = 0; i < result.Hall.Count; i++)
             {
-                //InsertHallGroupToDatabase(result.Hall.hallGroups[i]);
-                ErrorLabel.Text += ("- " + result.Hall.hallGroups[i] + "<br />");
-
-                for (int j = 0; j < result.Hall.hallGroups[i].HallSeats.Count; j++)
+                if (hallIds.Contains(result.Hall[i].Id))
                 {
-                    //InsertHallSeatToDatabase(result.Hall.hallGroups[i].HallSeats[j]);
-                    ErrorLabel.Text += ("-- " + result.Hall.hallGroups[i].HallSeats[j] + "<br />");
+                    UpdateHall(result.Hall[i]);
+                    //ErrorLabel.Text += ("<br />- " + result.Hall + " !Updated! <br />");
+                }
+                else
+                {
+                    InsertHallToDatabase(result.Hall[i]);
+                    //ErrorLabel.Text += ("<br />- " + result.Hall + "<br />");
+                }
+                for (int j = 0; j < result.Hall[i].hallGroups.Count; j++)
+                {
+                    if (hallGroupIds.Contains(result.Hall[i].hallGroups[j].Id))
+                    {
+                        UpdateHallGroup(result.Hall[i].hallGroups[j]);
+                        //ErrorLabel.Text += ("- " + result.Hall.hallGroups[i] + " !Updated! <br />");
+                    }
+                    else
+                    {
+                        InsertHallGroupToDatabase(result.Hall[i].hallGroups[j]);
+                        //ErrorLabel.Text += ("- " + result.Hall.hallGroups[i] + "<br />");
+                    }
+
+                    for (int k = 0; k < result.Hall[i].hallGroups[j].HallSeats.Count; k++)
+                    {
+                        if (hallSeatIds.Contains(result.Hall[i].hallGroups[j].HallSeats[k].Id))
+                        {
+                            UpdateHallSeat(result.Hall[i].hallGroups[j].HallSeats[k]);
+                            //ErrorLabel.Text += ("-- " + result.Hall.hallGroups[i].HallSeats[j] + " !Updated! <br />");
+                        }
+                        else
+                        {
+                            InsertHallSeatToDatabase(result.Hall[i].hallGroups[j].HallSeats[k]);
+                            //ErrorLabel.Text += ("-- " + result.Hall.hallGroups[i].HallSeats[j] + "<br />");
+                        }
+                    }
                 }
             }
+
+            HallGroupListBindData();
+            HallListBindData();
         }
 
         protected void SearchSeatButton_Click(object sender, EventArgs e)
         {
+            ErrorLabel.Text = string.Empty;
+            ReservationStatusLabel.Visible = false;
+
             int row = Convert.ToInt32(SeatRowTextBox.Text);
             int number = Convert.ToInt32(SeatNumberTextBox.Text);
 
             HallSeat seat = SelectHallSeat(row, number);
 
-            if(seat.Id == -1)
+            if (seat.Id == -1)
             {
                 IsReservedLabel.ForeColor = Color.OrangeRed;
                 IsReservedLabel.Text = "This seat is doesn't exist!";
+                ReserveDiv.Visible = false;
                 return;
             }
 
@@ -297,7 +365,7 @@ namespace Halls
                 IsReservedLabel.Text = "This seat is not reserved!";
                 ReserveDiv.Visible = true;
             }
-            SeatInfoLabel.Text = seat.ToString();
+            //SeatInfoLabel.Text = seat.ToString();
             ViewState["SearchedSeatId"] = seat.Id;
         }
 
@@ -305,6 +373,192 @@ namespace Halls
         {
             int seatId = (int)ViewState["SearchedSeatId"];
             UpdateReservation(seatId, true);
+            ReserveDiv.Visible = false;
+            ReservationStatusLabel.ForeColor = Color.LimeGreen;
+            IsReservedLabel.Text = "";
+            ReservationStatusLabel.Text = "Reservation successful!";
+            ReservationStatusLabel.Visible = true;
+        }
+
+        void HallGroupListBindData()
+        {
+            ReserveDiv.Visible = false;
+            HallGroupDropDownList.DataSource = SelectHallGroups();
+            HallGroupDropDownList.DataTextField = "Name";
+            HallGroupDropDownList.DataValueField = "Id";
+            HallGroupDropDownList.DataBind();
+        }
+
+        void HallListBindData()
+        {
+            ReserveDiv.Visible = false;
+            HallDropDownList.DataSource = SelectHalls();
+            HallDropDownList.DataTextField = "Name";
+            HallDropDownList.DataValueField = "Id";
+            HallDropDownList.DataBind();
+        }
+
+        List<int> GetHallExistingIds()
+        {
+            SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+            List<int> ids = new List<int>();
+
+            try
+            {
+                cnn.Open();
+                SqlCommand cmd = new SqlCommand("Hall_Select_Ids", cnn);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int id = Convert.ToInt32(reader["HallID"]);
+                    ids.Add(id);
+                }
+                cnn.Close();
+
+                return ids;
+            }
+            catch (Exception ex)
+            {
+                ErrorLabel.Text = ex.Message;
+                return null; //Error accessing database
+            }
+        }
+
+        List<int> GetHallGroupExistingIds()
+        {
+            SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+            List<int> ids = new List<int>();
+
+            try
+            {
+                cnn.Open();
+                SqlCommand cmd = new SqlCommand("HallGroup_Select_Ids", cnn);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int id = Convert.ToInt32(reader["HallGroupId"]);
+                    ids.Add(id);
+                }
+                cnn.Close();
+
+                return ids;
+            }
+            catch (Exception ex)
+            {
+                ErrorLabel.Text = ex.Message;
+                return null; //Error accessing database
+            }
+        }
+
+        List<int> GetHallSeatExistingIds()
+        {
+            SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+            List<int> ids = new List<int>();
+
+            try
+            {
+                cnn.Open();
+                SqlCommand cmd = new SqlCommand("HallSeat_Select_Ids", cnn);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int id = Convert.ToInt32(reader["ShowSeatId"]);
+                    ids.Add(id);
+                }
+                cnn.Close();
+
+                return ids;
+            }
+            catch (Exception ex)
+            {
+                ErrorLabel.Text = ex.Message;
+                return null; //Error accessing database
+            }
+        }
+
+        bool UpdateHall(Hall hall)
+        {
+            SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+            try
+            {
+                cnn.Open();
+                SqlCommand cmd = new SqlCommand("Hall_Update", cnn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@HallID", SqlDbType.Int).Value = hall.Id;
+                cmd.Parameters.AddWithValue("@Name", SqlDbType.NVarChar).Value = hall.Name;
+                cmd.Parameters.AddWithValue("@TicketLimit", SqlDbType.Int).Value = hall.TicketLimit;
+                cmd.ExecuteNonQuery();
+                cnn.Close();
+
+                return true; //Success
+            }
+            catch (Exception ex)
+            {
+                ErrorLabel.Text = ex.Message;
+                return false; //Error accessing database
+            }
+        }
+
+        bool UpdateHallGroup(HallGroup hallGroup)
+        {
+            SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+            try
+            {
+                cnn.Open();
+                SqlCommand cmd = new SqlCommand("HallGroup_Update", cnn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@HallGroupID", SqlDbType.Int).Value = hallGroup.Id;
+                cmd.Parameters.AddWithValue("@HallID", SqlDbType.Int).Value = hallGroup.HallID;
+                cmd.Parameters.AddWithValue("@Name", SqlDbType.NVarChar).Value = hallGroup.Name;
+                cmd.Parameters.AddWithValue("@AZ", SqlDbType.Int).Value = hallGroup.AZ;
+                cmd.ExecuteNonQuery();
+                cnn.Close();
+
+                return true; //Success
+            }
+            catch (Exception ex)
+            {
+                ErrorLabel.Text = ex.Message;
+                return false; //Error accessing database
+            }
+        }
+
+        bool UpdateHallSeat(HallSeat hallSeat)
+        {
+            SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+            try
+            {
+                cnn.Open();
+                SqlCommand cmd = new SqlCommand("HallSeat_Update", cnn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@ShowSeatID", SqlDbType.Int).Value = hallSeat.Id;
+                cmd.Parameters.AddWithValue("@HallGroupID", SqlDbType.Int).Value = hallSeat.HallGroupId;
+                cmd.Parameters.AddWithValue("@Color", SqlDbType.NVarChar).Value = hallSeat.Color;
+                cmd.Parameters.AddWithValue("@Price", SqlDbType.Float).Value = hallSeat.Price;
+                cmd.Parameters.AddWithValue("@SeatRow", SqlDbType.Int).Value = hallSeat.Row;
+                cmd.Parameters.AddWithValue("@SeatRowLetter", SqlDbType.NVarChar).Value = hallSeat.RowLetter;
+                cmd.Parameters.AddWithValue("@SeatNumber", SqlDbType.Int).Value = hallSeat.Number;
+                cmd.Parameters.AddWithValue("@SeatNumberLetter", SqlDbType.NVarChar).Value = hallSeat.NumberLetter;
+                cmd.Parameters.AddWithValue("@IsReserved", SqlDbType.Bit).Value = hallSeat.IsReserved;
+                cmd.ExecuteNonQuery();
+                cnn.Close();
+
+                return true; //Success
+            }
+            catch (Exception ex)
+            {
+                ErrorLabel.Text = ex.Message;
+                return false; //Error accessing database
+            }
         }
     }
 }
