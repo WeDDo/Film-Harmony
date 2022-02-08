@@ -24,24 +24,6 @@ namespace Halls
         protected global::System.Web.UI.UpdatePanel UpdatePanel1;
 
         /// <summary>
-        /// XMLFileUpload control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.FileUpload XMLFileUpload;
-
-        /// <summary>
-        /// ImportXMLButton control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button ImportXMLButton;
-
-        /// <summary>
         /// ErrorLabel control.
         /// </summary>
         /// <remarks>

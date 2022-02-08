@@ -3,16 +3,7 @@
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
     <asp:UpdatePanel ID="UpdatePanel1" runat="server">
         <ContentTemplate>
-
-            <!-- File upload div -->
-            <div id="FileUploadDiv">
-                <br />
-                <asp:FileUpload ID="XMLFileUpload" runat="server" />
-                <asp:Button ID="ImportXMLButton" runat="server" Text="Import" OnClick="ImportXMLButton_Click" />
-            </div>
             <asp:Label ID="ErrorLabel" runat="server" Text="" ForeColor="Red"></asp:Label>
-
-            <br />
             <!-- Seat search div -->
             <div id="SeatSearchDiv">
                 <div style="display: inline-block">
@@ -54,8 +45,5 @@
             </div>
 
         </ContentTemplate>
-        <Triggers>
-            <asp:PostBackTrigger ControlID="ImportXMLButton" />
-        </Triggers>
     </asp:UpdatePanel>
 </asp:Content>
