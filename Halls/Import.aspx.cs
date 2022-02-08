@@ -35,7 +35,7 @@ namespace Halls
                     errorMessage = errorMessage.Replace("There is an error in XML document (", string.Empty);
                     errorMessage = errorMessage.Replace(").", "");
                     string[] values = errorMessage.Split(new char[] { ',' });
-                    errorMessage = string.Format("There is an error in XML document line {0}! Fix this error and try importing again.", values[0]);
+                    errorMessage = string.Format("There is an error in XML document line {0}! Fix this error and try importing again.", Convert.ToInt32(values[0]) - 1);
                 }
 
                 ErrorLabel.Text = errorMessage;
@@ -379,12 +379,10 @@ namespace Halls
                 if (hallIds.Contains(result.Hall[i].Id))
                 {
                     UpdateHall(result.Hall[i]);
-                    //ErrorLabel.Text += ("<br />- " + result.Hall + " !Updated! <br />");
                 }
                 else
                 {
                     InsertHallToDatabase(result.Hall[i]);
-                    //ErrorLabel.Text += ("<br />- " + result.Hall + "<br />");
                 }
 
                 for (int j = 0; j < result.Hall[i].hallGroups.Count; j++)
@@ -392,12 +390,10 @@ namespace Halls
                     if (hallGroupIds.Contains(result.Hall[i].hallGroups[j].Id))
                     {
                         UpdateHallGroup(result.Hall[i].hallGroups[j]);
-                        //ErrorLabel.Text += ("- " + result.Hall.hallGroups[i] + " !Updated! <br />");
                     }
                     else
                     {
                         InsertHallGroupToDatabase(result.Hall[i].hallGroups[j]);
-                        //ErrorLabel.Text += ("- " + result.Hall.hallGroups[i] + "<br />");
                     }
 
                     for (int k = 0; k < result.Hall[i].hallGroups[j].HallSeats.Count; k++)
@@ -405,12 +401,10 @@ namespace Halls
                         if (hallSeatIds.Contains(result.Hall[i].hallGroups[j].HallSeats[k].Id))
                         {
                             UpdateHallSeat(result.Hall[i].hallGroups[j].HallSeats[k]);
-                            //ErrorLabel.Text += ("-- " + result.Hall.hallGroups[i].HallSeats[j] + " !Updated! <br />");
                         }
                         else
                         {
                             InsertHallSeatToDatabase(result.Hall[i].hallGroups[j].HallSeats[k]);
-                            //ErrorLabel.Text += ("-- " + result.Hall.hallGroups[i].HallSeats[j] + "<br />");
                         }
                     }
                 }

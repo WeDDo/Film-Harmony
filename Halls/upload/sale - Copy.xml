@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Filharmonija>
 <Hall>
-<HallID>66w</HallID>
+<HallID>66</HallID>
 <Name>LNF Didzioji sale XXL</Name>
 <TicketLimit>10</TicketLimit>
 <HallGroup>
@@ -3933,6 +3933,17 @@
 <SeatRow>16</SeatRow>
 <SeatRowLetter>A</SeatRowLetter>
 <SeatNumber>18</SeatNumber>
+<SeatNumberLetter></SeatNumberLetter>
+<IsReserved>false</IsReserved>
+</HallSeat>
+<HallSeat>
+<HallGroupID>41</HallGroupID>
+<ShowSeatID>16600</ShowSeatID>
+<Color>Firebrick</Color>
+<Price>50.0000</Price>
+<SeatRow>16</SeatRow>
+<SeatRowLetter>A</SeatRowLetter>
+<SeatNumber>19</SeatNumber>
 <SeatNumberLetter></SeatNumberLetter>
 <IsReserved>false</IsReserved>
 </HallSeat>

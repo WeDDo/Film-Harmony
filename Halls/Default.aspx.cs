@@ -11,6 +11,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Serialization;
 using System.Drawing;
+using System.Text.RegularExpressions;
 
 namespace Halls
 {
@@ -191,7 +192,7 @@ namespace Halls
             int row = Convert.ToInt32(SeatRowDropDownList.SelectedValue);
             int number = Convert.ToInt32(SeatNumberDropDownList.SelectedValue);
 
-            HallSeat seat = SelectHallSeat(row, number);
+            HallSeat seat = SelectHallSeat(row, number); //FIX THIS SHIT
 
             if (seat.Id == -1)
             {
@@ -229,13 +230,17 @@ namespace Halls
 
         void SeatNumberBind()
         {
-            SeatNumberDropDownList.DataSource = SelectSeatNumber(Convert.ToInt32(HallGroupDropDownList.SelectedValue), Convert.ToInt32(SeatRowDropDownList.SelectedValue));
+            SeatNumberDropDownList.DataSource = SelectSeatNumber(Convert.ToInt32(HallGroupDropDownList.SelectedValue), SeatRowDropDownList.SelectedValue);
+            HallGroupDropDownList.DataTextField = "EntireNumber";
+            HallGroupDropDownList.DataValueField = "Number"; //FIX
             SeatNumberDropDownList.DataBind();
         }
 
         void SeatRowBind()
         {
             SeatRowDropDownList.DataSource = SelectSeatRow(Convert.ToInt32(HallGroupDropDownList.SelectedValue));
+            HallGroupDropDownList.DataTextField = "EntireRow";
+            HallGroupDropDownList.DataValueField = "EntireRow";
             SeatRowDropDownList.DataBind();
         }
 
@@ -257,10 +262,10 @@ namespace Halls
             HallDropDownList.DataBind();
         }
 
-        List<int> SelectSeatRow(int hallGroupId)
+        List<FullSeatRow> SelectSeatRow(int hallGroupId)
         {
             SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
-            List<int> rows = new List<int>();
+            List<FullSeatRow> rows = new List<FullSeatRow>();
 
             try
             {
@@ -274,10 +279,12 @@ namespace Halls
                 while (reader.Read())
                 {
                     int row = Convert.ToInt32(reader["SeatRow"]);
-                    rows.Add(row);
+                    string rowLetter = (!DBNull.Value.Equals(reader["SeatRowLetter"])) ? reader["SeatRowLetter"].ToString() : string.Empty;
+                    rows.Add(new FullSeatRow(row, rowLetter));
+                    ErrorLabel.Text += row + rowLetter + ", ";
                 }
                 cnn.Close();
-
+               
                 return rows;
             }
             catch (Exception ex)
@@ -287,25 +294,53 @@ namespace Halls
             }
         }
 
-        List<int> SelectSeatNumber(int hallGroupId, int seatRow)
+        List<FullSeatNumber> SelectSeatNumber(int hallGroupId, string seatRow)
         {
             SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
-            List<int> numbers = new List<int>();
+            List<FullSeatNumber> numbers = new List<FullSeatNumber>();
+
+            Regex regex = new Regex(@"(\d+)([a-zA-Z]+)");
+            Match result = regex.Match(seatRow);
+
+            string seatNumber = string.Empty;
+            string seatNumberLetter = string.Empty;
+            if (result.Success)
+            {
+                seatNumber = result.Groups[1].Value;
+                seatNumberLetter = result.Groups[2].Value;
+            }
+            else
+            {
+                seatNumber = seatRow;
+            }
 
             try
             {
                 cnn.Open();
-                SqlCommand cmd = new SqlCommand("HallSeat_Select_SeatNumber", cnn);
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@ExternalHallGroupID", SqlDbType.Int).Value = hallGroupId;
-                cmd.Parameters.AddWithValue("@SeatRow", SqlDbType.Int).Value = seatRow;
+                SqlCommand cmd;
+                if (seatNumberLetter != null && seatNumberLetter.Length > 0)
+                {
+                    cmd = new SqlCommand("HallSeat_Select_SeatNumber_WithLetter", cnn);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@ExternalHallGroupID", SqlDbType.Int).Value = hallGroupId;
+                    cmd.Parameters.AddWithValue("@SeatRow", SqlDbType.Int).Value = Convert.ToInt32(seatNumber);
+                    cmd.Parameters.AddWithValue("@SeatRowLetter", SqlDbType.NVarChar).Value = seatNumberLetter;
+                }
+                else
+                {
+                    cmd = new SqlCommand("HallSeat_Select_SeatNumber", cnn);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@ExternalHallGroupID", SqlDbType.Int).Value = hallGroupId;
+                    cmd.Parameters.AddWithValue("@SeatRow", SqlDbType.Int).Value = Convert.ToInt32(seatNumber);
+                }
 
                 SqlDataReader reader = cmd.ExecuteReader();
 
                 while (reader.Read())
                 {
                     int number = Convert.ToInt32(reader["SeatNumber"]);
-                    numbers.Add(number);
+                    string rowLetter = (!DBNull.Value.Equals(reader["SeatNumberLetter"])) ? reader["SeatNumberLetter"].ToString() : string.Empty;
+                    numbers.Add(new FullSeatNumber(number, rowLetter));
                 }
                 cnn.Close();
 
@@ -313,7 +348,7 @@ namespace Halls
             }
             catch (Exception ex)
             {
-                ErrorLabel.Text = ex.Message;
+                ErrorLabel.Text = ex.ToString();
                 return null; //Error accessing database
             }
         }
