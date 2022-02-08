@@ -96,13 +96,13 @@ namespace Halls
         protected global::System.Web.UI.WebControls.Label SeatRowLabel;
 
         /// <summary>
-        /// SeatRowTextBox control.
+        /// SeatRowDropDownList control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox SeatRowTextBox;
+        protected global::System.Web.UI.WebControls.DropDownList SeatRowDropDownList;
 
         /// <summary>
         /// SeatNumberLabel control.
@@ -114,13 +114,13 @@ namespace Halls
         protected global::System.Web.UI.WebControls.Label SeatNumberLabel;
 
         /// <summary>
-        /// SeatNumberTextBox control.
+        /// SeatNumberDropDownList control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox SeatNumberTextBox;
+        protected global::System.Web.UI.WebControls.DropDownList SeatNumberDropDownList;
 
         /// <summary>
         /// SearchSeatButton control.

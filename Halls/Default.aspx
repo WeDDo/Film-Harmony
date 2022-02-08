@@ -22,17 +22,17 @@
 
                 <div style="display: inline-block">
                     <asp:Label ID="HallGroupDropDownListLabel" CssClass="label-width-m" runat="server" Text="Hall group:"></asp:Label>
-                    <asp:DropDownList ID="HallGroupDropDownList" runat="server"></asp:DropDownList>
+                    <asp:DropDownList ID="HallGroupDropDownList" AutoPostBack="true" runat="server" OnSelectedIndexChanged="HallGroupDropDownList_SelectedIndexChanged"></asp:DropDownList>
                 </div>
 
                 <div style="display: inline-block">
                     <asp:Label ID="SeatRowLabel" CssClass="label-width-m" runat="server" Text="Seat Row:"></asp:Label>
-                    <asp:TextBox ID="SeatRowTextBox" CssClass="input-width-m" runat="server"></asp:TextBox>
+                    <asp:DropDownList ID="SeatRowDropDownList" CssClass="input-width-m" AutoPostBack="true" runat="server" OnSelectedIndexChanged="SeatRowDropDownList_SelectedIndexChanged"></asp:DropDownList>
                 </div>
 
                 <div style="display: inline-block">
                     <asp:Label ID="SeatNumberLabel" CssClass="label-width-m" runat="server" Text="Seat Number:"></asp:Label>
-                    <asp:TextBox ID="SeatNumberTextBox" CssClass="input-width-m" runat="server"></asp:TextBox>
+                    <asp:DropDownList ID="SeatNumberDropDownList" CssClass="input-width-m" runat="server"></asp:DropDownList>
                 </div>
                 <br />
                 <asp:Button ID="SearchSeatButton" runat="server" Text="Search" OnClick="SearchSeatButton_Click" />

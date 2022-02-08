@@ -22,6 +22,8 @@ namespace Halls
             {
                 HallGroupListBindData();
                 HallListBindData();
+                SeatRowBind();
+                SeatNumberBind();
             }
         }
 
@@ -403,8 +405,8 @@ namespace Halls
             ErrorLabel.Text = string.Empty;
             ReservationStatusLabel.Visible = false;
 
-            int row = Convert.ToInt32(SeatRowTextBox.Text);
-            int number = Convert.ToInt32(SeatNumberTextBox.Text);
+            int row = Convert.ToInt32(SeatRowDropDownList.SelectedValue);
+            int number = Convert.ToInt32(SeatNumberDropDownList.SelectedValue);
 
             HallSeat seat = SelectHallSeat(row, number);
 
@@ -428,7 +430,6 @@ namespace Halls
                 IsReservedLabel.Text = "This seat is not reserved!";
                 ReserveDiv.Visible = true;
             }
-            //SeatInfoLabel.Text = seat.ToString();
             ViewState["SearchedSeatId"] = seat.Id;
         }
 
@@ -441,6 +442,18 @@ namespace Halls
             IsReservedLabel.Text = "";
             ReservationStatusLabel.Text = "Reservation successful!";
             ReservationStatusLabel.Visible = true;
+        }
+
+        void SeatNumberBind()
+        {
+            SeatNumberDropDownList.DataSource = SelectSeatNumber(Convert.ToInt32(HallGroupDropDownList.SelectedValue), Convert.ToInt32(SeatRowDropDownList.SelectedValue));
+            SeatNumberDropDownList.DataBind();
+        }
+
+        void SeatRowBind()
+        {
+            SeatRowDropDownList.DataSource = SelectSeatRow(Convert.ToInt32(HallGroupDropDownList.SelectedValue));
+            SeatRowDropDownList.DataBind();
         }
 
         void HallGroupListBindData()
@@ -625,6 +638,77 @@ namespace Halls
                 ErrorLabel.Text = ex.Message;
                 return false; //Error accessing database
             }
+        }
+
+        List<int> SelectSeatRow(int hallGroupId)
+        {
+            SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+            List<int> rows = new List<int>();
+
+            try
+            {
+                cnn.Open();
+                SqlCommand cmd = new SqlCommand("HallSeat_Select_SeatRow", cnn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@HallGroupId", SqlDbType.Int).Value = hallGroupId;
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int row = Convert.ToInt32(reader["SeatRow"]);
+                    rows.Add(row);
+                }
+                cnn.Close();
+
+                return rows;
+            }
+            catch (Exception ex)
+            {
+                ErrorLabel.Text = ex.Message;
+                return null; //Error accessing database
+            }
+        }
+
+        List<int> SelectSeatNumber(int hallGroupId, int seatRow)
+        {
+            SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+            List<int> numbers = new List<int>();
+
+            try
+            {
+                cnn.Open();
+                SqlCommand cmd = new SqlCommand("HallSeat_Select_SeatNumber", cnn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@HallGroupId", SqlDbType.Int).Value = hallGroupId;
+                cmd.Parameters.AddWithValue("@SeatRow", SqlDbType.Int).Value = seatRow;
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int number = Convert.ToInt32(reader["SeatNumber"]);
+                    numbers.Add(number);
+                }
+                cnn.Close();
+
+                return numbers;
+            }
+            catch (Exception ex)
+            {
+                ErrorLabel.Text = ex.Message;
+                return null; //Error accessing database
+            }
+        }
+
+        protected void HallGroupDropDownList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SeatRowBind();
+        }
+
+        protected void SeatRowDropDownList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SeatNumberBind();
         }
     }
 }
