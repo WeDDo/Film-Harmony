@@ -520,12 +520,21 @@ namespace Halls
         protected void HallGroupDropDownList_SelectedIndexChanged(object sender, EventArgs e)
         {
             SeatRowBind();
-            SeatNumberBind();
+            ReserveDiv.Visible = false;
+            IsReservedLabel.Text = string.Empty;
         }
 
         protected void SeatRowDropDownList_SelectedIndexChanged(object sender, EventArgs e)
         {
             SeatNumberBind();
+            ReserveDiv.Visible = false;
+            IsReservedLabel.Text = string.Empty;
+        }
+
+        protected void SeatNumberDropDownList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ReserveDiv.Visible = false;
+            IsReservedLabel.Text = string.Empty;
         }
     }
 }
