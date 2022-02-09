@@ -17,6 +17,7 @@ namespace Halls
 {
     public partial class _Default : Page
     {
+        const string emptySpace = "&nbsp";
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
@@ -52,12 +53,11 @@ namespace Halls
 
             SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
             HallSeat seat = new HallSeat();
-            List<HallSeat> seats = new List<HallSeat>();
 
             try
             {
                 cnn.Open();
-                SqlCommand cmd = new SqlCommand("HallSeat_Select", cnn);
+                SqlCommand cmd = new SqlCommand("HallSeat_Select_Seat_Row_Number", cnn);
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.AddWithValue("@ExternalHallGroupID", SqlDbType.Int).Value = HallGroupDropDownList.SelectedValue;
                 cmd.Parameters.AddWithValue("@SeatRow", SqlDbType.Int).Value = row;
@@ -72,9 +72,136 @@ namespace Halls
                     string color = reader["Color"].ToString();
                     double price = Convert.ToDouble(reader["Price"]);
                     int seatRow = Convert.ToInt32(reader["SeatRow"]);
-                    string seatRowLetter = (reader["SeatRowLetter"] as string == null) ? reader["SeatRowLetter"] as string : string.Empty;
+                    string seatRowLetter = (!DBNull.Value.Equals(reader["SeatRowLetter"])) ? reader["SeatRowLetter"].ToString() : string.Empty;
                     int seatNumber = Convert.ToInt32(reader["SeatNumber"]);
-                    string seatNumberLetter = (reader["SeatNumberLetter"] as string == null) ? reader["SeatNumberLetter"] as string : string.Empty;
+                    string seatNumberLetter = (!DBNull.Value.Equals(reader["SeatNumberLetter"])) ? reader["SeatNumberLetter"].ToString() : string.Empty;
+                    bool isReserved = Convert.ToBoolean(reader["IsReserved"]);
+
+                    seat = new HallSeat(id, hallGroupId, color, price, seatRow, seatRowLetter, seatNumber, seatNumberLetter, isReserved);
+                }
+                cnn.Close();
+
+                return seat;
+            }
+            catch (Exception ex)
+            {
+                ErrorLabel.Text = ex.Message;
+                return null; //Error accessing database
+            }
+        }
+
+        HallSeat SelectHallSeat(int row, string rowLetter, int number)
+        {
+            SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+            HallSeat seat = new HallSeat();
+
+            try
+            {
+                cnn.Open();
+                SqlCommand cmd = new SqlCommand("HallSeat_Select_Seat_Row_RowLetter_Number", cnn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@ExternalHallGroupID", SqlDbType.Int).Value = HallGroupDropDownList.SelectedValue;
+                cmd.Parameters.AddWithValue("@SeatRow", SqlDbType.Int).Value = row;
+                cmd.Parameters.AddWithValue("@SeatRowLetter", SqlDbType.NVarChar).Value = rowLetter;
+                cmd.Parameters.AddWithValue("@SeatNumber", SqlDbType.Int).Value = number;
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int id = Convert.ToInt32(reader["ShowSeatID"]);
+                    int hallGroupId = Convert.ToInt32(reader["ExternalHallGroupID"]);
+                    string color = reader["Color"].ToString();
+                    double price = Convert.ToDouble(reader["Price"]);
+                    int seatRow = Convert.ToInt32(reader["SeatRow"]);
+                    string seatRowLetter = (!DBNull.Value.Equals(reader["SeatRowLetter"])) ? reader["SeatRowLetter"].ToString() : string.Empty;
+                    int seatNumber = Convert.ToInt32(reader["SeatNumber"]);
+                    string seatNumberLetter = (!DBNull.Value.Equals(reader["SeatNumberLetter"])) ? reader["SeatNumberLetter"].ToString() : string.Empty;
+                    bool isReserved = Convert.ToBoolean(reader["IsReserved"]);
+
+                    seat = new HallSeat(id, hallGroupId, color, price, seatRow, seatRowLetter, seatNumber, seatNumberLetter, isReserved);
+                }
+                cnn.Close();
+
+                return seat;
+            }
+            catch (Exception ex)
+            {
+                ErrorLabel.Text = ex.Message;
+                return null; //Error accessing database
+            }
+        }
+
+        HallSeat SelectHallSeat(int row, int number, string numberLetter)
+        {
+            SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+            HallSeat seat = new HallSeat();
+
+            try
+            {
+                cnn.Open();
+                SqlCommand cmd = new SqlCommand("HallSeat_Select_Seat_Row_Number_NumberLetter", cnn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@ExternalHallGroupID", SqlDbType.Int).Value = HallGroupDropDownList.SelectedValue;
+                cmd.Parameters.AddWithValue("@SeatRow", SqlDbType.Int).Value = row;
+                cmd.Parameters.AddWithValue("@SeatNumber", SqlDbType.Int).Value = number;
+                cmd.Parameters.AddWithValue("@SeatNumberLetter", SqlDbType.NVarChar).Value = numberLetter;
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int id = Convert.ToInt32(reader["ShowSeatID"]);
+                    int hallGroupId = Convert.ToInt32(reader["ExternalHallGroupID"]);
+                    string color = reader["Color"].ToString();
+                    double price = Convert.ToDouble(reader["Price"]);
+                    int seatRow = Convert.ToInt32(reader["SeatRow"]);
+                    string seatRowLetter = (!DBNull.Value.Equals(reader["SeatRowLetter"])) ? reader["SeatRowLetter"].ToString() : string.Empty;
+                    int seatNumber = Convert.ToInt32(reader["SeatNumber"]);
+                    string seatNumberLetter = (!DBNull.Value.Equals(reader["SeatNumberLetter"])) ? reader["SeatNumberLetter"].ToString() : string.Empty;
+                    bool isReserved = Convert.ToBoolean(reader["IsReserved"]);
+
+                    seat = new HallSeat(id, hallGroupId, color, price, seatRow, seatRowLetter, seatNumber, seatNumberLetter, isReserved);
+                }
+                cnn.Close();
+
+                return seat;
+            }
+            catch (Exception ex)
+            {
+                ErrorLabel.Text = ex.Message;
+                return null; //Error accessing database
+            }
+        }
+
+        HallSeat SelectHallSeat(int row, string rowLetter, int number, string numberLetter)
+        {
+            SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
+            HallSeat seat = new HallSeat();
+
+            try
+            {
+                cnn.Open();
+                SqlCommand cmd = new SqlCommand("HallSeat_Select_Seat_Row_RowLetter_Number_NumberLetter", cnn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@ExternalHallGroupID", SqlDbType.Int).Value = HallGroupDropDownList.SelectedValue;
+                cmd.Parameters.AddWithValue("@SeatRow", SqlDbType.Int).Value = row;
+                cmd.Parameters.AddWithValue("@SeatRowLetter", SqlDbType.NVarChar).Value = rowLetter;
+                cmd.Parameters.AddWithValue("@SeatNumber", SqlDbType.Int).Value = number;
+                cmd.Parameters.AddWithValue("@SeatNumberLetter", SqlDbType.NVarChar).Value = numberLetter;
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int id = Convert.ToInt32(reader["ShowSeatID"]);
+                    int hallGroupId = Convert.ToInt32(reader["ExternalHallGroupID"]);
+                    string color = reader["Color"].ToString();
+                    double price = Convert.ToDouble(reader["Price"]);
+                    int seatRow = Convert.ToInt32(reader["SeatRow"]);
+                    string seatRowLetter = (!DBNull.Value.Equals(reader["SeatRowLetter"])) ? reader["SeatRowLetter"].ToString() : string.Empty;
+                    int seatNumber = Convert.ToInt32(reader["SeatNumber"]);
+                    string seatNumberLetter = (!DBNull.Value.Equals(reader["SeatNumberLetter"])) ? reader["SeatNumberLetter"].ToString() : string.Empty;
                     bool isReserved = Convert.ToBoolean(reader["IsReserved"]);
 
                     seat = new HallSeat(id, hallGroupId, color, price, seatRow, seatRowLetter, seatNumber, seatNumberLetter, isReserved);
@@ -179,20 +306,34 @@ namespace Halls
             }
         }
 
-        protected void ImportXMLButton_Click(object sender, EventArgs e)
-        {
-            
-        }
-
         protected void SearchSeatButton_Click(object sender, EventArgs e)
         {
-            ErrorLabel.Text = string.Empty;
+            ErrorLabel.Text = emptySpace;
             ReservationStatusLabel.Visible = false;
 
-            int row = Convert.ToInt32(SeatRowDropDownList.SelectedValue);
-            int number = Convert.ToInt32(SeatNumberDropDownList.SelectedValue);
+            string seatRowValue = SeatRowDropDownList.SelectedValue;
+            string seatNumberValue = SeatNumberDropDownList.SelectedValue;
 
-            HallSeat seat = SelectHallSeat(row, number); //FIX THIS SHIT
+            List<string> seatRowValues = ExtractSeatValues(seatRowValue);
+            List<string> seatNumberValues = ExtractSeatValues(seatNumberValue);
+
+            HallSeat seat = new HallSeat();
+            if(seatRowValues.Count == 1 && seatNumberValues.Count == 1)
+            {
+                seat = SelectHallSeat(Convert.ToInt32(seatRowValues[0]), Convert.ToInt32(seatNumberValues[0]));
+            }
+            if(seatRowValues.Count == 2 && seatNumberValues.Count == 1)
+            {
+                seat = SelectHallSeat(Convert.ToInt32(seatRowValues[0]), seatRowValues[1], Convert.ToInt32(seatNumberValues[0]));
+            }
+            if (seatRowValues.Count == 1 && seatNumberValues.Count == 2)
+            {
+                seat = SelectHallSeat(Convert.ToInt32(seatRowValues[0]), Convert.ToInt32(seatNumberValues[0]), seatNumberValues[1]);
+            }
+            if (seatRowValues.Count == 2 && seatNumberValues.Count == 2)
+            {
+                seat = SelectHallSeat(Convert.ToInt32(seatRowValues[0]), seatRowValues[1], Convert.ToInt32(seatNumberValues[0]), seatNumberValues[1]);
+            }
 
             if (seat.Id == -1)
             {
@@ -232,7 +373,7 @@ namespace Halls
         {
             SeatNumberDropDownList.DataSource = SelectSeatNumber(Convert.ToInt32(HallGroupDropDownList.SelectedValue), SeatRowDropDownList.SelectedValue);
             HallGroupDropDownList.DataTextField = "EntireNumber";
-            HallGroupDropDownList.DataValueField = "Number"; //FIX
+            HallGroupDropDownList.DataValueField = "EntireNumber";
             SeatNumberDropDownList.DataBind();
         }
 
@@ -281,7 +422,6 @@ namespace Halls
                     int row = Convert.ToInt32(reader["SeatRow"]);
                     string rowLetter = (!DBNull.Value.Equals(reader["SeatRowLetter"])) ? reader["SeatRowLetter"].ToString() : string.Empty;
                     rows.Add(new FullSeatRow(row, rowLetter));
-                    ErrorLabel.Text += row + rowLetter + ", ";
                 }
                 cnn.Close();
                
@@ -298,7 +438,7 @@ namespace Halls
         {
             SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["Dbconnection"].ConnectionString);
             List<FullSeatNumber> numbers = new List<FullSeatNumber>();
-
+            //Do with method
             Regex regex = new Regex(@"(\d+)([a-zA-Z]+)");
             Match result = regex.Match(seatRow);
 
@@ -353,9 +493,34 @@ namespace Halls
             }
         }
 
+        List<string> ExtractSeatValues(string value)
+        {
+            List<string> extractedValues = new List<string>();
+
+            Regex regex = new Regex(@"(\d+)([a-zA-Z]+)");
+            Match result = regex.Match(value);
+
+            string seatNumber = string.Empty;
+            string seatLetter = string.Empty;
+            if (result.Success)
+            {
+                seatNumber = result.Groups[1].Value;
+                seatLetter = result.Groups[2].Value;
+                extractedValues.Add(seatNumber);
+                extractedValues.Add(seatLetter);
+
+                return extractedValues;
+            }
+            seatNumber = value;
+            extractedValues.Add(seatNumber);
+
+            return extractedValues;
+        }
+
         protected void HallGroupDropDownList_SelectedIndexChanged(object sender, EventArgs e)
         {
             SeatRowBind();
+            SeatNumberBind();
         }
 
         protected void SeatRowDropDownList_SelectedIndexChanged(object sender, EventArgs e)

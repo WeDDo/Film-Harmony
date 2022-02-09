@@ -6,6 +6,7 @@
             <!-- File upload div -->
             <br />
             <div id="FileUploadDiv">
+                <asp:Label ID="FileUploadHelperLabel" runat="server" Text="Select XML file to upload data:" Font-Bold="True"></asp:Label>
                 <asp:FileUpload ID="XMLFileUpload" runat="server" />
                 <br />
                 <asp:Button ID="ImportXMLButton" CssClass="btn btn-default" runat="server" Text="Import" OnClick="ImportXMLButton_Click" />

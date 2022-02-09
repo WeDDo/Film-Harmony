@@ -3,7 +3,7 @@
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
     <asp:UpdatePanel ID="UpdatePanel1" runat="server">
         <ContentTemplate>
-            <asp:Label ID="ErrorLabel" runat="server" Text="" ForeColor="Red"></asp:Label>
+            <asp:Label ID="ErrorLabel" runat="server" Text="&nbsp" ForeColor="Red"></asp:Label>
             <!-- Seat search div -->
             <div id="SeatSearchDiv">
                 <div style="display: inline-block">

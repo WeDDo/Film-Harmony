@@ -24,6 +24,15 @@ namespace Halls
         protected global::System.Web.UI.UpdatePanel UpdatePanel1;
 
         /// <summary>
+        /// FileUploadHelperLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label FileUploadHelperLabel;
+
+        /// <summary>
         /// XMLFileUpload control.
         /// </summary>
         /// <remarks>

@@ -409,7 +409,7 @@ namespace Halls
                     }
                 }
             }
-            ImportStatusLabel.Text = "Successfully imported";
+            ImportStatusLabel.Text = "Successfully imported!";
             ErrorLabel.Text = string.Empty;
         }
     }
